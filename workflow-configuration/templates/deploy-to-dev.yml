@@ -1,0 +1,28 @@
+name: Deploy to Pantheon DEV
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Only trigger on pull request closed events to master
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+    types: [ closed ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: ${{ github.event.pull_request.merged == true }}
+    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-pantheon.yml@main
+    with:
+      pantheon_site: ${{ vars.PANTHEON_SITE }}
+      target_env: "dev"
+      backup_hours_threshold: 6
+      run_semantic_release: true
+    secrets:
+      PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
+      PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
+      CI_GH_TOKEN: ${{ secrets.CI_GH_TOKEN }}

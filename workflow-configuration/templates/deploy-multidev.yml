@@ -1,0 +1,46 @@
+name: Deploy to Pantheon Multi-Dev
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types: [opened,synchronize,reopened,closed]
+    branches-ignore:
+      - master
+      - main
+
+jobs:
+  run_static_tests:
+    name: Run Static Tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Update composer in working docker container
+      run: |
+        sudo composer self-update
+        composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+    - name: Run code linting
+      run: |
+        composer lint
+
+    - name: Run code-sniffer
+      run: |
+        echo "FUTURE: Running PHP Code Sniffer..."
+
+  deploy_multidev:
+    name: Deploy to Multidev
+    needs: run_static_tests
+    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-multidev.yml@main
+    with:
+      pantheon_site: ${{ vars.PANTHEON_SITE }}
+      target_env: pr-${{ github.event.number }}
+      create_multidev: true
+      clone_content: false
+      delete_multidev_after: ${{ github.event.action == 'closed' && github.event.pull_request.merged != true }}
+    secrets:
+      PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
+      PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
