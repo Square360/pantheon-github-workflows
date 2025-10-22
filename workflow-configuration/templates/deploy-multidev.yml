@@ -21,13 +21,13 @@ jobs:
     - name: Calculate environment name
       id: env_name
       run: |
-        if [[ "${{ github.event.pull_request.base.ref }}" == "develop" ]]; then
-          # For develop branch, use rc-YEAR-WEEK format
+        if [[ "${{ github.event.pull_request.base.ref }}" == "develop" && "${{ github.event.action }}" == "closed" && "${{ github.event.pull_request.merged }}" == "true" ]]; then
+          # For merged PRs to develop branch, use rc-YEAR-WEEK format
           YEAR=$(date +%Y)
           WEEK=$(date +%U)
           TARGET_ENV="rc-${YEAR}-${WEEK}"
         else
-          # For other branches, use pr-NUMBER format
+          # For all other cases (open PRs, PRs to other branches), use pr-NUMBER format
           TARGET_ENV="pr-${{ github.event.pull_request.number }}"
         fi
         echo "target_env=${TARGET_ENV}" >> $GITHUB_OUTPUT
