@@ -37,7 +37,7 @@ jobs:
     uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-multidev.yml@main
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
-      target_env: pr-${{ github.event.number }}
+      target_env: pr-${{ github.event.pull_request.number }}
     secrets:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
