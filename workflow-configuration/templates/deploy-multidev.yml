@@ -24,7 +24,7 @@ jobs:
         if [[ "${{ github.event.pull_request.base.ref }}" == "develop" && "${{ github.event.action }}" == "closed" && "${{ github.event.pull_request.merged }}" == "true" ]]; then
           # For merged PRs to develop branch, use rc-YEAR-WEEK format
           YEAR=$(date +%Y)
-          WEEK=$(date +%U)
+          WEEK=$(date +%V)
           TARGET_ENV="rc-${YEAR}-${WEEK}"
         else
           # For all other cases (open PRs, PRs to other branches), use pr-NUMBER format
