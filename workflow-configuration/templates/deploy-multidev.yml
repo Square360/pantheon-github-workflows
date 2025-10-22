@@ -12,6 +12,27 @@ on:
       - main
 
 jobs:
+  calculate_target_env:
+    name: Calculate Target Environment
+    runs-on: ubuntu-latest
+    outputs:
+      target_env: ${{ steps.env_name.outputs.target_env }}
+    steps:
+    - name: Calculate environment name
+      id: env_name
+      run: |
+        if [[ "${{ github.event.pull_request.base.ref }}" == "develop" ]]; then
+          # For develop branch, use rc-YEAR-WEEK format
+          YEAR=$(date +%Y)
+          WEEK=$(date +%U)
+          TARGET_ENV="rc-${YEAR}-${WEEK}"
+        else
+          # For other branches, use pr-NUMBER format
+          TARGET_ENV="pr-${{ github.event.pull_request.number }}"
+        fi
+        echo "target_env=${TARGET_ENV}" >> $GITHUB_OUTPUT
+        echo "Calculated target environment: ${TARGET_ENV}"
+
   run_static_tests:
     name: Run Static Tests
     runs-on: ubuntu-latest
@@ -33,11 +54,11 @@ jobs:
 
   deploy_multidev:
     name: Deploy to Multidev
-    needs: run_static_tests
+    needs: [run_static_tests, calculate_target_env]
     uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-multidev.yml@main
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
-      target_env: pr-${{ github.event.pull_request.number }}
+      target_env: ${{ needs.calculate_target_env.outputs.target_env }}
     secrets:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}

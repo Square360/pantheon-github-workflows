@@ -7,17 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Conditional environment naming logic for multidev deployments based on target branch
+- Automatic RC environment naming (`rc-{YEAR}-{WEEK}`) for develop branch merges
+- Dynamic target environment calculation job in deploy-multidev template
+
 ### Changed
 
 - Updated multidev workflow template to match simplified shared workflow interface
 - Removed redundant multidev creation parameters (`create_multidev`, `clone_content`, `delete_multidev_after`)
 - Simplified parameter structure to only require `pantheon_site` and `target_env`
 - Improved workflow efficiency by leveraging pantheon-systems/push-to-pantheon built-in capabilities
+- Enhanced environment naming strategy to support both RC and PR naming conventions
 
 ### Fixed
 
 - Resolved conflicts between manual multidev creation and pantheon-systems action automation
 - Eliminated redundant workflow steps that were duplicating functionality
+- Restored RC environment naming for develop branch deployments that was lost during workflow simplification
 
 ## [1.0.0] - 2025-10-22
 
