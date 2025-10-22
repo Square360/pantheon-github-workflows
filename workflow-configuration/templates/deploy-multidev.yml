@@ -38,9 +38,6 @@ jobs:
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       target_env: pr-${{ github.event.number }}
-      create_multidev: true
-      clone_content: false
-      delete_multidev_after: ${{ github.event.action == 'closed' && github.event.pull_request.merged != true }}
     secrets:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
