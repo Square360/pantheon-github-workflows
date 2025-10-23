@@ -21,15 +21,30 @@ jobs:
     - name: Calculate environment name
       id: env_name
       run: |
-        if [[ "${{ github.event.pull_request.base.ref }}" == "develop" && "${{ github.event.action }}" == "closed" && "${{ github.event.pull_request.merged }}" == "true" ]]; then
+        # Extract GitHub event variables for better readability
+        BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+        EVENT_ACTION="${{ github.event.action }}"
+        IS_MERGED="${{ github.event.pull_request.merged }}"
+        PR_NUMBER="${{ github.event.pull_request.number }}"
+
+        echo "Base branch: ${BASE_BRANCH}"
+        echo "Event action: ${EVENT_ACTION}"
+        echo "Is merged: ${IS_MERGED}"
+        echo "PR number: ${PR_NUMBER}"
+
+        # Check if this is a merged PR to the develop branch
+        if [[ "${BASE_BRANCH}" == "develop" && "${EVENT_ACTION}" == "closed" && "${IS_MERGED}" == "true" ]]; then
           # For merged PRs to develop branch, use rc-YEAR-WEEK format
           YEAR=$(date +%Y)
           WEEK=$(date +%V)
           TARGET_ENV="rc-${YEAR}-${WEEK}"
+          echo "Creating release candidate environment for merged develop PR"
         else
           # For all other cases (open PRs, PRs to other branches), use pr-NUMBER format
-          TARGET_ENV="pr-${{ github.event.pull_request.number }}"
+          TARGET_ENV="pr-${PR_NUMBER}"
+          echo "Creating standard PR environment"
         fi
+
         echo "target_env=${TARGET_ENV}" >> $GITHUB_OUTPUT
         echo "Calculated target environment: ${TARGET_ENV}"
 
