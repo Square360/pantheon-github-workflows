@@ -147,6 +147,7 @@ This file tracks changes made to GitHub Actions workflows in this project.
 
 ### Added
 - Installed Square360 Pantheon GitHub Workflows package
+- Support for optional Slack notifications in deployment workflows
 
 ## [$date] - Package Installation
 
@@ -197,6 +198,13 @@ Add these secrets in your GitHub repository settings:
 Add these variables in your GitHub repository settings:
 
 - `PANTHEON_SITE` - Your Pantheon site machine name
+
+### Optional Repository Variables (for Slack Notifications)
+
+Add these variables for optional Slack notifications:
+
+- `SLACK_CHANNEL` - Slack channel for deployment notifications (e.g., `#deployments`)
+- `SLACK_WEBHOOK_URL` - Slack webhook URL for posting notifications
 
 ## Custom Workflows
 

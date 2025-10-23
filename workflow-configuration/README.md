@@ -109,6 +109,11 @@ Since this package overwrites workflow files that control deployment, it's criti
 
 ## Version History
 
+### v1.1.0 (Slack Notifications)
+- Added support for Slack notifications in both workflows
+- Updated templates to include `slack_channel` and `slack_webhook_url` parameters
+- Notifications include deployment status, environment URLs, and troubleshooting links
+
 ### v1.0.0 (Initial Release)
 - Basic workflow file installation
 - Overwrite strategy for consistency

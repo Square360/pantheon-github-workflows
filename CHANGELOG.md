@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-10-23
+
+### Added
+
+- Slack notification support for both deployment workflows
+- Optional `slack_channel` and `slack_webhook_url` parameters in workflow templates
+- Deployment status notifications with environment URLs and troubleshooting links
+
+### Updated
+
+- `deploy-to-dev.yml` template now includes optional Slack notification parameters
+- `deploy-multidev.yml` template now includes optional Slack notification parameters
+- README documentation updated to describe Slack configuration
+
+## [1.0.1] - 2025-10-22
+
 ### Added
 
 - Conditional environment naming logic for multidev deployments based on target branch

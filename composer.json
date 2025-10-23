@@ -1,6 +1,6 @@
 {
     "name": "square360/pantheon-github-workflows",
-    "description": "Square360 standardized GitHub Actions workflows for Pantheon deployments",
+    "description": "Square360 standardized GitHub Actions workflows for Pantheon deployments with optional Slack notifications",
     "type": "composer-plugin",
     "license": "MIT",
     "keywords": [

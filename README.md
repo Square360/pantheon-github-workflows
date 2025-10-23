@@ -28,12 +28,12 @@ composer require square360/pantheon-github-workflows
 ### deploy-to-dev.yml
 - **Trigger**: When pull requests are merged to master/main
 - **Action**: Deploys code to Pantheon DEV environment
-- **Features**: Includes semantic release, backup checks, database updates
+- **Features**: Includes semantic release, backup checks, database updates, optional Slack notifications
 
 ### deploy-multidev.yml  
 - **Trigger**: Pull request opened/updated on feature branches
 - **Action**: Creates temporary multidev environment for testing
-- **Features**: Static tests, PR comments with environment URL, automatic cleanup
+- **Features**: Static tests, PR comments with environment URL, automatic cleanup, optional Slack notifications
 
 ## Configuration
 
@@ -48,6 +48,11 @@ Add these to your GitHub repository settings:
 ### Required Repository Variables
 
 - `PANTHEON_SITE` - Your Pantheon site machine name
+
+### Optional Repository Variables (for Slack Notifications)
+
+- `SLACK_CHANNEL` - Slack channel for deployment notifications (e.g., `#deployments`)
+- `SLACK_WEBHOOK_URL` - Slack webhook URL for posting notifications
 
 ## Updating
 

@@ -1,10 +1,13 @@
-name: Deploy to Pantheon DEV
+# Example: Deploy to Pantheon with Slack Notifications
+# This is a comprehensive example showing how to configure Slack notifications
+# Copy and modify this file for your specific deployment needs
+
+name: Deploy to Pantheon with Slack Notifications
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-# Only trigger on pull request closed events to master
 on:
   pull_request:
     branches:
@@ -22,8 +25,10 @@ jobs:
       target_env: "dev"
       backup_hours_threshold: 6
       run_semantic_release: true
-      slack_channel: ${{ vars.SLACK_CHANNEL }}
-      slack_webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}
+      # Slack notification configuration
+      # These should be set as repository or organization variables
+      slack_channel: ${{ vars.SLACK_CHANNEL }}           # e.g., "#deployments"
+      slack_webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}   # Slack webhook URL
     secrets:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
