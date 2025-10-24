@@ -110,9 +110,10 @@ Since this package overwrites workflow files that control deployment, it's criti
 ## Version History
 
 ### v1.1.0 (Slack Notifications)
-- Added support for Slack notifications in both workflows
-- Updated templates to include `slack_channel` and `slack_webhook_url` parameters
+- Added support for Slack notifications in both workflows using Slack Web API
+- Updated templates to include `slack_channel` and `slack_bot_token` parameters
 - Notifications include deployment status, environment URLs, and troubleshooting links
+- Bot token approach allows posting to any channel without separate webhooks
 
 ### v1.0.0 (Initial Release)
 - Basic workflow file installation

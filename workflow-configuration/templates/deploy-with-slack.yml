@@ -26,10 +26,9 @@ jobs:
       backup_hours_threshold: 6
       run_semantic_release: true
       # Slack notification configuration
-      # These should be set as repository or organization variables
       slack_channel: ${{ vars.SLACK_CHANNEL }}           # e.g., "#deployments"
-      slack_webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}   # Slack webhook URL
     secrets:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
       CI_GH_TOKEN: ${{ secrets.CI_GH_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}     # Slack bot token

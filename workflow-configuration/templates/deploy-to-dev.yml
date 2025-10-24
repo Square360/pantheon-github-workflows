@@ -23,8 +23,8 @@ jobs:
       backup_hours_threshold: 6
       run_semantic_release: true
       slack_channel: ${{ vars.SLACK_CHANNEL }}
-      slack_webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}
     secrets:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
       CI_GH_TOKEN: ${{ secrets.CI_GH_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

@@ -193,6 +193,12 @@ Add these secrets in your GitHub repository settings:
 - `PANTHEON_MACHINE_TOKEN` - Pantheon machine token for Terminus CLI
 - `CI_GH_TOKEN` - GitHub token with repo permissions (for semantic release)
 
+### Optional Repository Secrets (for Slack Notifications)
+
+Add this secret for optional Slack notifications:
+
+- `SLACK_BOT_TOKEN` - Slack bot token for posting notifications
+
 ### Required Repository Variables
 
 Add these variables in your GitHub repository settings:
@@ -204,7 +210,6 @@ Add these variables in your GitHub repository settings:
 Add these variables for optional Slack notifications:
 
 - `SLACK_CHANNEL` - Slack channel for deployment notifications (e.g., `#deployments`)
-- `SLACK_WEBHOOK_URL` - Slack webhook URL for posting notifications
 
 ## Custom Workflows
 

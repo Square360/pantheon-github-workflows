@@ -75,7 +75,7 @@ jobs:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       target_env: ${{ needs.calculate_target_env.outputs.target_env }}
       slack_channel: ${{ vars.SLACK_CHANNEL }}
-      slack_webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}
     secrets:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

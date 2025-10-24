@@ -45,6 +45,10 @@ Add these to your GitHub repository settings:
 - `PANTHEON_MACHINE_TOKEN` - Pantheon machine token for Terminus CLI  
 - `CI_GH_TOKEN` - GitHub token with repo permissions (for semantic release)
 
+### Optional Repository Secrets (for Slack Notifications)
+
+- `SLACK_BOT_TOKEN` - Slack bot token for posting notifications
+
 ### Required Repository Variables
 
 - `PANTHEON_SITE` - Your Pantheon site machine name
@@ -52,7 +56,6 @@ Add these to your GitHub repository settings:
 ### Optional Repository Variables (for Slack Notifications)
 
 - `SLACK_CHANNEL` - Slack channel for deployment notifications (e.g., `#deployments`)
-- `SLACK_WEBHOOK_URL` - Slack webhook URL for posting notifications
 
 ## Updating
 

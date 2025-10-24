@@ -11,15 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Slack notification support for both deployment workflows
-- Optional `slack_channel` and `slack_webhook_url` parameters in workflow templates
+- Slack notification support for both deployment workflows using Slack Web API
+- Optional `slack_channel` and `slack_bot_token` parameters in workflow templates
 - Deployment status notifications with environment URLs and troubleshooting links
+- Support for posting to any Slack channel using bot token authentication
+
+### Changed
+
+- Switched from webhook-based Slack notifications to bot token approach for more flexibility
+- Bot token allows posting to multiple channels without separate webhooks
 
 ### Updated
 
 - `deploy-to-dev.yml` template now includes optional Slack notification parameters
 - `deploy-multidev.yml` template now includes optional Slack notification parameters
-- README documentation updated to describe Slack configuration
+- README documentation updated to describe bot token configuration
 
 ## [1.0.1] - 2025-10-22
 
