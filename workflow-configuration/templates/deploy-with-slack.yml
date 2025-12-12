@@ -27,6 +27,8 @@ jobs:
       run_semantic_release: true
       # Slack notification configuration
       slack_channel: ${{ vars.SLACK_CHANNEL }}           # e.g., "#deployments"
+      # Optional: Skip post-deployment terminus commands
+      workflow_skip_terminus: ${{ vars.WORKFLOW_SKIP_TERMINUS == 'true' }}
     secrets:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}

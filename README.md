@@ -57,6 +57,10 @@ Add these to your GitHub repository settings:
 
 - `SLACK_CHANNEL` - Slack channel for deployment notifications (e.g., `#deployments`)
 
+### Optional Repository Variables (for Workflow Control)
+
+- `WORKFLOW_SKIP_TERMINUS` - Set to `true` (without quotes) to skip post-deployment terminus commands (updb, cim, cr)
+
 ## Updating
 
 To get the latest workflow versions:
