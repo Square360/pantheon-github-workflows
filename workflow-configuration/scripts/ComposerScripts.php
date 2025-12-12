@@ -211,6 +211,12 @@ Add these variables for optional Slack notifications:
 
 - `SLACK_CHANNEL` - Slack channel for deployment notifications (e.g., `#deployments`)
 
+### Optional Repository Variables (for Workflow Control)
+
+Add these variables for optional workflow customization:
+
+- `WORKFLOW_SKIP_TERMINUS` - Set to `"true"` to skip post-deployment terminus commands (updb, cim, cr)
+
 ## Custom Workflows
 
 To add custom workflows that won't be overwritten by package updates, use different filenames such as:
