@@ -12,6 +12,94 @@ on:
       - main
 
 jobs:
+  composer_diff_comment:
+    name: Composer Diff Comment
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize') }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Generate Composer diff markdown
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          # Ensure composer.lock exists in the PR branch
+          if [ ! -f composer.lock ]; then
+            {
+              echo "### Composer dependency changes"
+              echo ""
+              echo "> composer.lock not found in this branch."
+            } > composer_diff.md
+            exit 0
+          fi
+
+          # Fetch the base branch so we can read its composer.lock
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          if ! git show "origin/$BASE_REF:composer.lock" > base_composer.lock 2>/dev/null; then
+            {
+              echo "### Composer dependency changes"
+              echo ""
+              echo "> No composer.lock on base branch '$BASE_REF' to diff against."
+            } > composer_diff.md
+            exit 0
+          fi
+
+          # Build TSVs of package -> version for PR and base (including dev packages)
+          jq -r '.packages[]? | "\(.name)\t\(.version)"' composer.lock > pr.tsv
+          jq -r '."packages-dev"[]? | "\(.name)\t\(.version)"' composer.lock >> pr.tsv
+          jq -r '.packages[]? | "\(.name)\t\(.version)"' base_composer.lock > base.tsv
+          jq -r '."packages-dev"[]? | "\(.name)\t\(.version)"' base_composer.lock >> base.tsv
+
+          sort -u pr.tsv -o pr.tsv
+          sort -u base.tsv -o base.tsv
+
+          # Merge by package name: columns -> name, pr_version, base_version
+          join -t $'\t' -a1 -a2 -e '' -o '1.1 1.2 2.2' -1 1 -2 1 pr.tsv base.tsv | sort > merged.tsv
+
+          ADDED=$(awk -F'\t' 'NF==3 && $2 != "" && $3 == "" {print}' merged.tsv | wc -l | tr -d ' ')
+          REMOVED=$(awk -F'\t' 'NF==3 && $2 == "" && $3 != "" {print}' merged.tsv | wc -l | tr -d ' ')
+          CHANGED=$(awk -F'\t' 'NF==3 && $2 != "" && $3 != "" && $2 != $3 {print}' merged.tsv | wc -l | tr -d ' ')
+
+          TOTAL=$((ADDED + REMOVED + CHANGED))
+
+          {
+            echo "### Composer dependency changes"
+            echo ""
+            echo "- Base: \`$BASE_REF\` vs PR: \`${{ github.head_ref || github.ref_name }}\`"
+            echo "- Packages changed: $TOTAL (added: $ADDED, removed: $REMOVED, changed: $CHANGED)"
+            echo ""
+            if [ "$TOTAL" -eq 0 ]; then
+              echo "> No changes detected in composer.lock."
+            else
+              echo "| Package | Base | PR |"
+              echo "|---|---:|---:|"
+              # Changed
+              awk -F'\t' 'NF==3 && $2 != "" && $3 != "" && $2 != $3 {printf "| %s | %s | %s |\n",$1,$3,$2}' merged.tsv | sort
+              # Added
+              awk -F'\t' 'NF==3 && $2 != "" && $3 == "" {printf "| %s | — | %s |\n",$1,$2}' merged.tsv | sort
+              # Removed
+              awk -F'\t' 'NF==3 && $2 == "" && $3 != "" {printf "| %s | %s | — |\n",$1,$3}' merged.tsv | sort
+            fi
+          } > composer_diff.md
+
+      - name: Post or update sticky comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: composer-dependency-diff
+          path: composer_diff.md
+
   calculate_target_env:
     name: Calculate Target Environment
     runs-on: ubuntu-latest
