@@ -83,14 +83,16 @@ jobs:
             if [ "$TOTAL" -eq 0 ]; then
               echo "> No changes detected in composer.lock."
             else
-              echo "| Package | Base | PR |"
-              echo "|---|---:|---:|"
+              echo "- Legend: 🟩 added, 🟥 removed, 🟨 changed"
+              echo ""
+              echo "| Type | Package | Base | PR |"
+              echo "|:--:|---|---:|---:|"
               # Changed
-              awk -F'\t' 'NF==3 && $2 != "" && $3 != "" && $2 != $3 {printf "| %s | %s | %s |\n",$1,$3,$2}' merged.tsv | sort
+              awk -F'\t' 'NF==3 && $2 != "" && $3 != "" && $2 != $3 {printf "| 🟨 | %s | %s | %s |\n",$1,$3,$2}' merged.tsv | sort
               # Added
-              awk -F'\t' 'NF==3 && $2 != "" && $3 == "" {printf "| %s | — | %s |\n",$1,$2}' merged.tsv | sort
+              awk -F'\t' 'NF==3 && $2 != "" && $3 == "" {printf "| 🟩 | %s | — | %s |\n",$1,$2}' merged.tsv | sort
               # Removed
-              awk -F'\t' 'NF==3 && $2 == "" && $3 != "" {printf "| %s | %s | — |\n",$1,$3}' merged.tsv | sort
+              awk -F'\t' 'NF==3 && $2 == "" && $3 != "" {printf "| 🟥 | %s | %s | — |\n",$1,$3}' merged.tsv | sort
             fi
           } > composer_diff.md
 
