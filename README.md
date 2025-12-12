@@ -59,7 +59,7 @@ Add these to your GitHub repository settings:
 
 ### Optional Repository Variables (for Workflow Control)
 
-- `WORKFLOW_SKIP_TERMINUS` - Set to `"true"` to skip post-deployment terminus commands (updb, cim, cr)
+- `WORKFLOW_SKIP_TERMINUS` - Set to `true` (without quotes) to skip post-deployment terminus commands (updb, cim, cr)
 
 ## Updating
 

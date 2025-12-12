@@ -215,7 +215,7 @@ Add these variables for optional Slack notifications:
 
 Add these variables for optional workflow customization:
 
-- `WORKFLOW_SKIP_TERMINUS` - Set to `"true"` to skip post-deployment terminus commands (updb, cim, cr)
+- `WORKFLOW_SKIP_TERMINUS` - Set to `true` (without quotes) to skip post-deployment terminus commands (updb, cim, cr)
 
 ## Custom Workflows
 
