@@ -12,10 +12,16 @@ on:
       - main
     types: [ closed ]
   workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Branch to deploy (defaults to main/master)'
+        required: false
+        type: string
+        default: 'master'
 
 jobs:
   deploy:
-    if: ${{ github.event.pull_request.merged == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
     uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-pantheon.yml@main
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}

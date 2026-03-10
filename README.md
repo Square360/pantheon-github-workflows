@@ -18,7 +18,7 @@ composer require square360/pantheon-github-workflows
 
 **What happens during installation:**
 - Creates `.github/workflows/` directory
-- Installs `deploy-to-dev.yml` for DEV deployments  
+- Installs `deploy-to-dev.yml` for DEV deployments
 - Installs `deploy-multidev.yml` for PR-based multidev deployments
 - Creates `CHANGELOG-WORKFLOWS.md` for tracking workflow changes
 - Creates `.github/workflows/README.md` with configuration instructions
@@ -30,7 +30,7 @@ composer require square360/pantheon-github-workflows
 - **Action**: Deploys code to Pantheon DEV environment
 - **Features**: Includes semantic release, backup checks, database updates, optional Slack notifications
 
-### deploy-multidev.yml  
+### deploy-multidev.yml
 - **Trigger**: Pull request opened/updated on feature branches
 - **Action**: Creates temporary multidev environment for testing
 - **Features**: Static tests, PR comments with environment URL, automatic cleanup, optional Slack notifications
@@ -42,7 +42,7 @@ composer require square360/pantheon-github-workflows
 Add these to your GitHub repository settings:
 
 - `PANTHEON_SSH_KEY` - SSH private key for Pantheon access
-- `PANTHEON_MACHINE_TOKEN` - Pantheon machine token for Terminus CLI  
+- `PANTHEON_MACHINE_TOKEN` - Pantheon machine token for Terminus CLI
 - `CI_GH_TOKEN` - GitHub token with repo permissions (for semantic release)
 
 ### Optional Repository Secrets (for Slack Notifications)
@@ -78,7 +78,7 @@ To add custom workflows that won't be overwritten, use different filenames:
 ```
 .github/workflows/
 ├── deploy-to-dev.yml         ← Managed by package (overwritten)
-├── deploy-multidev.yml       ← Managed by package (overwritten)  
+├── deploy-multidev.yml       ← Managed by package (overwritten)
 ├── custom-deployment.yml     ← Your custom workflow (preserved)
 ├── testing.yml              ← Your custom workflow (preserved)
 └── build-assets.yml         ← Your custom workflow (preserved)
