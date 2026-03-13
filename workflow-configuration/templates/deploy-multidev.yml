@@ -21,7 +21,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
@@ -97,7 +97,7 @@ jobs:
           } > composer_diff.md
 
       - name: Post or update sticky comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: composer-dependency-diff
           path: composer_diff.md
@@ -142,7 +142,7 @@ jobs:
     name: Run Static Tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
