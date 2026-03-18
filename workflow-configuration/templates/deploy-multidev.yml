@@ -166,6 +166,7 @@ jobs:
   deploy_multidev:
     name: Deploy to Multidev
     needs: [run_static_tests, calculate_target_env]
+    if: ${{ github.event.action != 'closed' || github.event.pull_request.merged == true }}
     uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-multidev.yml@main
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
