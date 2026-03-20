@@ -186,7 +186,7 @@ jobs:
     # Runs for any environment (rc- or pr-) as long as deploy succeeded.
     # The reusable workflow gates execution on a [vrt] tag in the PR body.
     if: needs.deploy_multidev.result == 'success'
-    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-visual-regression.yml@feature/visual-regression
+    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-visual-regression.yml@main
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       target_env: ${{ needs.calculate_target_env.outputs.target_env }}
