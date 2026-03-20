@@ -101,6 +101,38 @@ class ComposerScripts {
       }
     }
 
+    // Config files to install (these will NOT be overwritten if they already exist)
+    $configFiles = [
+      'vrt-config.yml' => '.github/workflow_config/vrt-config.yml',
+    ];
+
+    foreach ($configFiles as $templateName => $destRelPath) {
+      $source = $templatesDir . '/' . $templateName;
+      $dest = $projectRoot . '/' . $destRelPath;
+      $destDir = dirname($dest);
+
+      if (!file_exists($source)) {
+        $io->writeError("<error>❌ Source file not found: $source</error>");
+        continue;
+      }
+
+      if (file_exists($dest)) {
+        $io->write("<comment>⚡ Preserved existing: $destRelPath</comment>");
+        continue;
+      }
+
+      if (!is_dir($destDir) && !mkdir($destDir, 0755, true)) {
+        $io->writeError("<error>❌ Could not create directory: $destDir</error>");
+        continue;
+      }
+
+      if (copy($source, $dest)) {
+        $io->write("<info>✅ Created: $destRelPath</info>");
+      } else {
+        $io->writeError("<error>❌ Failed to copy: $templateName</error>");
+      }
+    }
+
     // Create changelog file (only if it doesn't exist)
     $changelogPath = $projectRoot . '/CHANGELOG-WORKFLOWS.md';
     if (!file_exists($changelogPath)) {
