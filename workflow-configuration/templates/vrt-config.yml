@@ -1,6 +1,7 @@
 vrt:
   threshold: 0.05      # Max acceptable diff ratio (0.0–1.0)
   fail_on_diff: false  # Set to true to fail the workflow when threshold is exceeded
+  wait: 6              # Seconds to wait after networkidle before screenshotting (default: 6)
   viewports:
     - width: 1440
       height: 2880
@@ -11,3 +12,6 @@ vrt:
   pages:
     - path: /
       name: homepage
+    # - path: /about
+    #   name: about
+    #   wait: 12       # Per-page override — for pages with heavy animations or lazy-loaded content
