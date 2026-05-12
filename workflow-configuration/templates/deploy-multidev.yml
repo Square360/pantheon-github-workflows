@@ -102,6 +102,109 @@ jobs:
           header: composer-dependency-diff
           path: composer_diff.md
 
+  composer_security_audit:
+    name: Composer Security Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize') }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Run composer audit (warn-only)
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f composer.lock ]]; then
+            {
+              echo "### Composer security audit"
+              echo ""
+              echo "> No \`composer.lock\` found in this branch — nothing to audit."
+            } > composer_audit.md
+            exit 0
+          fi
+
+          # composer audit returns non-zero when advisories exist. We capture
+          # the exit code but never fail the job: this is a warn-only check.
+          set +e
+          composer audit --format=json --no-interaction > composer-audit.json 2>composer-audit.err
+          AUDIT_EXIT=$?
+          set -e
+          echo "composer audit exit code: $AUDIT_EXIT"
+
+          # If composer itself errored before producing JSON, surface that.
+          if [[ ! -s composer-audit.json ]]; then
+            {
+              echo "### Composer security audit"
+              echo ""
+              echo "> \`composer audit\` produced no output (exit code $AUDIT_EXIT). Stderr:"
+              echo ""
+              echo '```'
+              cat composer-audit.err 2>/dev/null || true
+              echo '```'
+            } > composer_audit.md
+            exit 0
+          fi
+
+          # Composer 2.4+ JSON shape:
+          # { "advisories": { "vendor/pkg": [ {...}, ... ], ... }, "abandoned": { "vendor/pkg": "replacement" } }
+          ADV_COUNT=$(jq '[.advisories // {} | to_entries[].value[]?] | length' composer-audit.json)
+          ABANDONED_COUNT=$(jq '.abandoned // {} | length' composer-audit.json)
+
+          {
+            echo "### Composer security audit"
+            echo ""
+            if [[ "$ADV_COUNT" -eq 0 && "$ABANDONED_COUNT" -eq 0 ]]; then
+              echo "✅ No known security advisories or abandoned packages in \`composer.lock\`."
+            else
+              echo "⚠️ **Warn-only check.** Findings below are advisory; the PR is not blocked."
+              echo ""
+              echo "- Advisories: $ADV_COUNT"
+              echo "- Abandoned packages: $ABANDONED_COUNT"
+              echo ""
+              if [[ "$ADV_COUNT" -gt 0 ]]; then
+                echo "#### Security advisories"
+                echo ""
+                echo "| Package | Severity | Advisory | Title |"
+                echo "|---|---|---|---|"
+                jq -r '
+                  [.advisories // {} | to_entries[] as $e | $e.value[]? | . + {package: $e.key}]
+                  | sort_by(.package)
+                  | .[]
+                  | (
+                      "| " + (.package // "") + " | " +
+                      (.severity // "unknown") + " | " +
+                      (if (.link // "") != "" then "[" + (.cve // .advisoryId // "advisory") + "](" + .link + ")" else (.cve // .advisoryId // "advisory") end) + " | " +
+                      ((.title // "") | gsub("\\|"; "\\|")) + " |"
+                    )
+                ' composer-audit.json
+                echo ""
+              fi
+              if [[ "$ABANDONED_COUNT" -gt 0 ]]; then
+                echo "#### Abandoned packages"
+                echo ""
+                echo "| Package | Suggested replacement |"
+                echo "|---|---|"
+                jq -r '.abandoned // {} | to_entries | sort_by(.key)[] | "| \(.key) | \(.value // "—") |"' composer-audit.json
+              fi
+            fi
+          } > composer_audit.md
+
+      - name: Post or update sticky comment
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: composer-security-audit
+          path: composer_audit.md
+
   calculate_target_env:
     name: Calculate Target Environment
     runs-on: ubuntu-latest
@@ -187,6 +290,30 @@ jobs:
     # The reusable workflow gates execution on a [vrt] tag in the PR body.
     if: needs.deploy_multidev.result == 'success'
     uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-visual-regression.yml@main
+    with:
+      pantheon_site: ${{ vars.PANTHEON_SITE }}
+      target_env: ${{ needs.calculate_target_env.outputs.target_env }}
+      slack_channel: ${{ vars.SLACK_CHANNEL }}
+    secrets:
+      PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+      CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+      CLICKUP_TEAM_ID: ${{ secrets.CLICKUP_TEAM_ID }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  security_scan:
+    name: Security Scan
+    needs: [deploy_multidev, calculate_target_env]
+    # Runs for any environment (rc- or pr-) as long as deploy succeeded.
+    # Gating happens inside the reusable workflow:
+    #   - rc-* environments always run, and fail the job on any High-severity finding.
+    #   - pr-* environments run only when the PR body contains [security] or
+    #     [security TASK-ID], and never fail (warn-only).
+    if: needs.deploy_multidev.result == 'success'
+    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-security-scan.yml@main
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       target_env: ${{ needs.calculate_target_env.outputs.target_env }}

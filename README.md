@@ -33,7 +33,21 @@ composer require square360/pantheon-github-workflows
 ### deploy-multidev.yml
 - **Trigger**: Pull request opened/updated on feature branches
 - **Action**: Creates temporary multidev environment for testing
-- **Features**: Static tests, PR comments with environment URL, automatic cleanup, optional Slack notifications
+- **Features**: Static tests, composer dependency diff, composer security audit (warn-only), PR comments with environment URL, optional OWASP ZAP baseline scan, automatic cleanup, optional Slack notifications
+
+#### Security checks
+
+Two security checks run alongside the deploy:
+
+1. **Composer Security Audit** — Runs `composer audit` against `composer.lock` on every PR push. Posts a sticky PR comment listing any known security advisories or abandoned packages found in your dependency tree. **Warn-only**: findings never fail the workflow or block the PR, but the comment is updated on every push so the latest state is always visible.
+
+2. **OWASP ZAP Baseline Scan** — Optional dynamic scan against the deployed multidev URL. Posts an HTML report (uploaded to S3), a PR comment summary, a ClickUp comment (if a task ID is detected), and a Slack notification (if `SLACK_CHANNEL` is set).
+
+   Gating:
+   - **`pr-*` multidevs** — opt-in. Add `[security]` or `[security TASK-ID]` to the PR body. Findings are reported but never fail the workflow.
+   - **`rc-*` multidevs** — mandatory. The scan always runs on release-candidate environments and **fails the workflow on any High-severity finding**.
+
+   Optional `[security YMAC-959]` syntax pins the ClickUp task ID for the comment; otherwise the ID is extracted from the branch name.
 
 ## Configuration
 
@@ -48,6 +62,20 @@ Add these to your GitHub repository settings:
 ### Optional Repository Secrets (for Slack Notifications)
 
 - `SLACK_BOT_TOKEN` - Slack bot token for posting notifications
+
+### Optional Repository Secrets (for ClickUp Notifications)
+
+- `CLICKUP_API_TOKEN` - ClickUp API token. Required to post deploy / VRT / security comments to the ClickUp task referenced by the PR
+- `CLICKUP_TEAM_ID` - ClickUp team (workspace) ID
+
+### Optional Repository Secrets (for Visual Regression Test and Security Scan Reports)
+
+These secrets are used by both the VRT and Security Scan reusable workflows. Reports are uploaded to S3 under `${PANTHEON_SITE}/${RUN_KEY}/` (VRT artefacts) and `${PANTHEON_SITE}/${RUN_KEY}/security/` (ZAP reports), so a single bucket and IAM policy covers both.
+
+- `AWS_ACCESS_KEY_ID` - IAM user with `s3:PutObject` on the report bucket
+- `AWS_SECRET_ACCESS_KEY` - paired secret for the IAM user
+- `AWS_S3_BUCKET` - bucket name (no `s3://` prefix)
+- `AWS_S3_REGION` - bucket region (defaults to `us-east-1` if unset)
 
 ### Required Repository Variables
 
@@ -70,6 +98,13 @@ composer update square360/pantheon-github-workflows
 ```
 
 **Important**: The workflow files `deploy-to-dev.yml` and `deploy-multidev.yml` will be **overwritten** with the latest versions. This ensures all projects stay up-to-date with the latest standards and security updates.
+
+### Rollout heads-up for the security audit additions
+
+After updating to a release that includes the Composer Security Audit and OWASP ZAP Baseline Scan jobs, each consumer site will see new workflow activity on its next PR:
+
+- **Composer Security Audit** — runs on every PR push. Sites whose `composer.lock` currently contains a package with a known advisory will see a sticky `composer-security-audit` PR comment listing the findings. **The workflow status stays green** — this is a warn-only check.
+- **OWASP ZAP Baseline Scan** — opt-in on `pr-*` PRs (no behaviour change unless `[security]` is added to the PR body), mandatory on `rc-*` merges to `develop`. The first `rc-*` build after the update will run a ZAP scan against the release-candidate multidev and will fail if any High-severity finding is reported. Plan the first post-update RC merge accordingly.
 
 ## Custom Workflows
 
