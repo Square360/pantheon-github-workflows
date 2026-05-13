@@ -270,7 +270,7 @@ jobs:
     name: Deploy to Multidev
     needs: [run_static_tests, calculate_target_env]
     if: ${{ github.event.action != 'closed' || github.event.pull_request.merged == true }}
-    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-multidev.yml@main
+    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-multidev.yml@10cd610d43ff52028f18748d6c92eaa3f40bbe8d  # v2.6
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       target_env: ${{ needs.calculate_target_env.outputs.target_env }}
@@ -289,7 +289,7 @@ jobs:
     # Runs for any environment (rc- or pr-) as long as deploy succeeded.
     # The reusable workflow gates execution on a [vrt] tag in the PR body.
     if: needs.deploy_multidev.result == 'success'
-    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-visual-regression.yml@main
+    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-visual-regression.yml@10cd610d43ff52028f18748d6c92eaa3f40bbe8d  # v2.6
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       target_env: ${{ needs.calculate_target_env.outputs.target_env }}
@@ -313,7 +313,7 @@ jobs:
     #   - pr-* environments run only when the PR body contains [security] or
     #     [security TASK-ID], and never fail (warn-only).
     if: needs.deploy_multidev.result == 'success'
-    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-security-scan.yml@main
+    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-security-scan.yml@10cd610d43ff52028f18748d6c92eaa3f40bbe8d  # v2.6
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       target_env: ${{ needs.calculate_target_env.outputs.target_env }}
