@@ -1,26 +1,9 @@
-name: Reusable Semantic Release
+name: Semantic Release
 
 on:
-  workflow_call:
-    inputs:
-      node_version:
-        description: 'Node.js version to use'
-        required: false
-        type: string
-        default: '24'
-      release_branches:
-        description: 'Branches to create releases from (JSON array)'
-        required: false
-        type: string
-        default: '["main", "master"]'
-      dry_run:
-        description: 'Run semantic release in dry-run mode'
-        required: false
-        type: boolean
-        default: false
-    secrets:
-      CI_GH_TOKEN:
-        required: true
+  push:
+    branches:
+      - main
 
 defaults:
   run:
@@ -44,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ inputs.node_version }}
+          node-version: '24'
 
       - name: Install dependencies
         run: |
@@ -120,7 +103,7 @@ jobs:
 
           cat > .releaserc.js << 'EOF'
           module.exports = {
-            branches: ${{ inputs.release_branches }},
+            branches: ["main"],
             plugins: [
               [
                 "@semantic-release/commit-analyzer",
@@ -194,10 +177,6 @@ jobs:
           unset GITHUB_HEAD_REF
           unset GITHUB_BASE_REF
 
-          if ${{ inputs.dry_run }}; then
-            npx semantic-release --dry-run
-          else
-            npx semantic-release
-          fi
+          npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.CI_GH_TOKEN }}
