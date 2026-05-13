@@ -1,3 +1,13 @@
+# Release 1.5.0 (2026-05-13)
+
+### Features
+
+* (): added semantic release for this repo (efc8840)
+
+### Continuous Integration
+
+* (): Add semantic release workflow to this repo (07cc68e)
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
