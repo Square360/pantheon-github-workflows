@@ -19,7 +19,8 @@ composer require square360/pantheon-github-workflows
 **What happens during installation:**
 - Creates `.github/workflows/` directory
 - Installs `deploy-to-dev.yml` for DEV deployments
-- Installs `deploy-multidev.yml` for PR-based multidev deployments
+- Installs `deploy-multidev.yml` for PR-based and release-candidate multidev deployments
+- Installs `deploy-epic-multidev.yml` for epic-branch multidev deployments
 - Creates `CHANGELOG-WORKFLOWS.md` for tracking workflow changes
 - Creates `.github/workflows/README.md` with configuration instructions
 
@@ -31,9 +32,16 @@ composer require square360/pantheon-github-workflows
 - **Features**: Includes semantic release, backup checks, database updates, optional Slack notifications
 
 ### deploy-multidev.yml
-- **Trigger**: Pull request opened/updated on feature branches
-- **Action**: Creates temporary multidev environment for testing
-- **Features**: Static tests, composer dependency diff, composer security audit (warn-only), PR comments with environment URL, optional OWASP ZAP baseline scan, automatic cleanup, optional Slack notifications
+- **Trigger**: Pull request opened/updated/closed on feature branches (any branch except master/main)
+- **Action**:
+  - PRs opened/synced/reopened on any branch → deploys to `pr-NNN` multidev
+  - PR closed-and-merged into `develop` → deploys to `rc-YYYY-WW` release-candidate multidev
+- **Features**: Static tests, composer dependency diff, composer security audit (warn-only); the underlying reusable workflow handles deploy, opt-in OWASP ZAP baseline scan, opt-in Visual Regression Tests, ClickUp comments, and optional Slack notifications
+
+### deploy-epic-multidev.yml
+- **Trigger**: Push to an `epic/**` branch (e.g. `epic/CU-EPIC-123` or `epic/CU-EPIC-123-checkout-redesign`)
+- **Action**: Deploys to an `epr-NNN` multidev whose name is derived from the epic ticket ID in the branch name
+- **Features**: Mandatory strict-mode OWASP ZAP baseline scan (fails the workflow on any High-severity finding), optional Slack and ClickUp notifications
 
 #### Security checks
 
@@ -41,13 +49,18 @@ Two security checks run alongside the deploy:
 
 1. **Composer Security Audit** — Runs `composer audit` against `composer.lock` on every PR push. Posts a sticky PR comment listing any known security advisories or abandoned packages found in your dependency tree. **Warn-only**: findings never fail the workflow or block the PR, but the comment is updated on every push so the latest state is always visible.
 
-2. **OWASP ZAP Baseline Scan** — Optional dynamic scan against the deployed multidev URL. Posts an HTML report (uploaded to S3), a PR comment summary, a ClickUp comment (if a task ID is detected), and a Slack notification (if `SLACK_CHANNEL` is set).
+2. **OWASP ZAP Baseline Scan** — Dynamic scan against the deployed multidev URL. Posts an HTML report (uploaded to S3), a PR comment summary, a ClickUp comment (if a task ID is detected), and a Slack notification (if `SLACK_CHANNEL` is set).
 
    Gating:
-   - **`pr-*` multidevs** — opt-in. Add `[security]` or `[security TASK-ID]` to the PR body. Findings are reported but never fail the workflow.
+   - **`pr-*` multidevs** — opt-in. Add `[run-security]` or `[run-security TASK-ID]` to the PR body. Findings are reported but never fail the workflow. (The legacy `[security]` / `[security TASK-ID]` flags continue to work.)
    - **`rc-*` multidevs** — mandatory. The scan always runs on release-candidate environments and **fails the workflow on any High-severity finding**.
+   - **`epr-*` multidevs** — mandatory. Same strict gate as `rc-*`; runs on every push to the epic branch.
 
-   Optional `[security YMAC-959]` syntax pins the ClickUp task ID for the comment; otherwise the ID is extracted from the branch name.
+   Optional `[run-security YMAC-959]` syntax pins the ClickUp task ID for the comment; otherwise the ID is extracted from the branch name.
+
+#### Visual Regression Tests
+
+Opt-in on `pr-*` multidevs: add `[run-vrt]` or `[run-vrt TASK-ID]` to the PR body. (The legacy `[vrt]` / `[vrt TASK-ID]` flags continue to work.) The reusable workflow uploads HTML and JSON reports to S3 and posts the same PR / ClickUp / Slack notification pattern as the security scan.
 
 ## Configuration
 
@@ -99,12 +112,13 @@ composer update square360/pantheon-github-workflows
 
 **Important**: The workflow files `deploy-to-dev.yml` and `deploy-multidev.yml` will be **overwritten** with the latest versions. This ensures all projects stay up-to-date with the latest standards and security updates.
 
-### Rollout heads-up for the security audit additions
+### Rollout heads-up for the v3 split
 
-After updating to a release that includes the Composer Security Audit and OWASP ZAP Baseline Scan jobs, each consumer site will see new workflow activity on its next PR:
+The shared workflows that back these templates have been split out by environment type and now live in the renamed `Square360/shared-workflows` repository (pinned to `v3.0.0`). When you update to this release, each consumer site picks up:
 
-- **Composer Security Audit** — runs on every PR push. Sites whose `composer.lock` currently contains a package with a known advisory will see a sticky `composer-security-audit` PR comment listing the findings. **The workflow status stays green** — this is a warn-only check.
-- **OWASP ZAP Baseline Scan** — opt-in on `pr-*` PRs (no behaviour change unless `[security]` is added to the PR body), mandatory on `rc-*` merges to `develop`. The first `rc-*` build after the update will run a ZAP scan against the release-candidate multidev and will fail if any High-severity finding is reported. Plan the first post-update RC merge accordingly.
+- A new `deploy-epic-multidev.yml` workflow that fires on pushes to `epic/**` branches and creates an `epr-NNN` multidev with a mandatory strict-mode ZAP scan. If you don't use epic branches, the file is harmless — it never triggers.
+- The existing `deploy-multidev.yml` workflow now routes PR pushes to one shared workflow and `develop`-merge events to another. Behaviour is unchanged for consumers; the split happens inside the reusable workflows.
+- New `[run-security]` and `[run-vrt]` PR-body flags become the canonical opt-in tags. The legacy `[security]` and `[vrt]` flags continue to work indefinitely — no forced migration on PR authors.
 
 ## Custom Workflows
 
