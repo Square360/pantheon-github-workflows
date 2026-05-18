@@ -42,7 +42,8 @@ class ComposerScripts {
    *
    * This method:
    * - Creates .github/workflows/ directory
-   * - OVERWRITES existing workflow files (deploy-to-dev.yml, deploy-multidev.yml, deploy-epic-multidev.yml)
+   * - OVERWRITES existing workflow files (deploy-to-dev.yml, deploy-multidev.yml)
+   * - DELETES obsolete managed files left over from older plugin releases
    * - Creates CHANGELOG-WORKFLOWS.md from template if it doesn't exist
    * - Preserves any custom workflow files not managed by this package
    *
@@ -82,6 +83,13 @@ class ComposerScripts {
     $workflowFiles = [
       'deploy-to-dev.yml',
       'deploy-multidev.yml',
+    ];
+
+    // Obsolete workflow files left over from older releases of this plugin.
+    // They were once managed by this package and need to be removed on update
+    // so they don't fire alongside the current ones.
+    //   - deploy-epic-multidev.yml: folded into deploy-multidev.yml in v2.0.5
+    $obsoleteWorkflowFiles = [
       'deploy-epic-multidev.yml',
     ];
 
@@ -99,6 +107,18 @@ class ComposerScripts {
         }
       } else {
         $io->writeError("<error>❌ Source file not found: $source</error>");
+      }
+    }
+
+    // Remove obsolete managed workflow files if they exist.
+    foreach ($obsoleteWorkflowFiles as $filename) {
+      $obsoletePath = $targetDir . '/' . $filename;
+      if (file_exists($obsoletePath)) {
+        if (unlink($obsoletePath)) {
+          $io->write("<info>🗑️  Removed obsolete: .github/workflows/$filename</info>");
+        } else {
+          $io->writeError("<error>❌ Failed to remove obsolete: $filename</error>");
+        }
       }
     }
 
@@ -186,8 +206,7 @@ This file tracks changes made to GitHub Actions workflows in this project.
 
 ### Added
 - `deploy-to-dev.yml` - Deployment to Pantheon DEV environment
-- `deploy-multidev.yml` - Pull request deployments to PR (pr-NNN) and release-candidate (rc-YYYY-WW) multidev environments
-- `deploy-epic-multidev.yml` - Epic-branch deployments to epr-NNN multidev environments
+- `deploy-multidev.yml` - All multidev deployments: PR (pr-NNN), release-candidate (rc-YYYY-WW), and Epic (epr-NNN). Routing decided by event type and branch ref inside the workflow.
 - Automated workflow management via Composer package
 
 ### Notes
@@ -215,8 +234,7 @@ This directory contains GitHub Actions workflows for automated deployment to Pan
 The following workflows are managed by the `square360/pantheon-github-workflows` Composer package and will be automatically updated:
 
 - `deploy-to-dev.yml` - Deploys merged pull requests to Pantheon DEV environment
-- `deploy-multidev.yml` - Deploys pull requests to PR (`pr-NNN`) and release-candidate (`rc-YYYY-WW`) multidev environments
-- `deploy-epic-multidev.yml` - Deploys epic-branch pushes (`epic/CU-EPIC-XXX`) to `epr-NNN` multidev environments with mandatory strict-mode security scan
+- `deploy-multidev.yml` - Deploys to all three multidev tracks: PR (`pr-NNN`), release-candidate (`rc-YYYY-WW`), and Epic (`epr-NNN`). Routing decided by event type and branch ref
 
 ## Configuration
 
