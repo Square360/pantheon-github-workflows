@@ -42,7 +42,7 @@ class ComposerScripts {
    *
    * This method:
    * - Creates .github/workflows/ directory
-   * - OVERWRITES existing workflow files (deploy-to-dev.yml, deploy-multidev.yml)
+   * - OVERWRITES existing workflow files (deploy-to-dev.yml, deploy-multidev.yml, deploy-epic-multidev.yml)
    * - Creates CHANGELOG-WORKFLOWS.md from template if it doesn't exist
    * - Preserves any custom workflow files not managed by this package
    *
@@ -82,6 +82,7 @@ class ComposerScripts {
     $workflowFiles = [
       'deploy-to-dev.yml',
       'deploy-multidev.yml',
+      'deploy-epic-multidev.yml',
     ];
 
     // Copy workflow files from templates
@@ -185,7 +186,8 @@ This file tracks changes made to GitHub Actions workflows in this project.
 
 ### Added
 - `deploy-to-dev.yml` - Deployment to Pantheon DEV environment
-- `deploy-multidev.yml` - Pull request deployments to multidev environments
+- `deploy-multidev.yml` - Pull request deployments to PR (pr-NNN) and release-candidate (rc-YYYY-WW) multidev environments
+- `deploy-epic-multidev.yml` - Epic-branch deployments to epr-NNN multidev environments
 - Automated workflow management via Composer package
 
 ### Notes
@@ -213,7 +215,8 @@ This directory contains GitHub Actions workflows for automated deployment to Pan
 The following workflows are managed by the `square360/pantheon-github-workflows` Composer package and will be automatically updated:
 
 - `deploy-to-dev.yml` - Deploys merged pull requests to Pantheon DEV environment
-- `deploy-multidev.yml` - Deploys pull requests to temporary multidev environments
+- `deploy-multidev.yml` - Deploys pull requests to PR (`pr-NNN`) and release-candidate (`rc-YYYY-WW`) multidev environments
+- `deploy-epic-multidev.yml` - Deploys epic-branch pushes (`epic/CU-EPIC-XXX`) to `epr-NNN` multidev environments with mandatory strict-mode security scan
 
 ## Configuration
 

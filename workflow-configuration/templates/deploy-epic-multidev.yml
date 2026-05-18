@@ -1,0 +1,33 @@
+name: Deploy to Pantheon Epic Multi-Dev
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Fires on every push to an epic branch (epic/CU-EPIC-XXX or
+# epic/CU-EPIC-XXX-<short-description>). The reusable workflow derives the
+# epr-NNN multidev name from the epic ticket ID in the branch name and runs
+# the mandatory strict-mode security scan after deploy.
+on:
+  push:
+    branches:
+      - 'epic/**'
+
+jobs:
+  deploy_epic_multidev:
+    name: Deploy to Epic Multidev
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-epic-multidev.yml@2a2d8286dc3901ea13a759379a99a399d5151b60  # v3.0.0
+    with:
+      pantheon_site: ${{ vars.PANTHEON_SITE }}
+      slack_channel: ${{ vars.SLACK_CHANNEL }}
+      workflow_skip_terminus: ${{ vars.WORKFLOW_SKIP_TERMINUS == 'true' }}
+    secrets:
+      PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
+      PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+      CLICKUP_TEAM_ID: ${{ secrets.CLICKUP_TEAM_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}

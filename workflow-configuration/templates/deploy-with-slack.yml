@@ -19,10 +19,9 @@ on:
 jobs:
   deploy:
     if: ${{ github.event.pull_request.merged == true }}
-    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-deploy-pantheon.yml@10cd610d43ff52028f18748d6c92eaa3f40bbe8d  # v2.6
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-dev.yml@2a2d8286dc3901ea13a759379a99a399d5151b60  # v3.0.0
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
-      target_env: "dev"
       backup_hours_threshold: 6
       run_semantic_release: true
       # Slack notification configuration
