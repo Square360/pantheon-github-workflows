@@ -239,7 +239,7 @@ jobs:
     if: >-
       !(github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop')
       && (github.event.action != 'closed' || github.event.pull_request.merged == true)
-    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-pr-multidev.yml@66dcddc37327b205e7cc5876222cdb012f72960c  # v3.0.1
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-pr-multidev.yml@01165b1c08bd0efedf9204b6de3bf1fbff3964e9  # v3.0.2
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       slack_channel: ${{ vars.SLACK_CHANNEL }}
@@ -265,7 +265,7 @@ jobs:
       github.event.action == 'closed'
       && github.event.pull_request.merged == true
       && github.event.pull_request.base.ref == 'develop'
-    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-rc-multidev.yml@66dcddc37327b205e7cc5876222cdb012f72960c  # v3.0.1
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-rc-multidev.yml@01165b1c08bd0efedf9204b6de3bf1fbff3964e9  # v3.0.2
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       slack_channel: ${{ vars.SLACK_CHANNEL }}
