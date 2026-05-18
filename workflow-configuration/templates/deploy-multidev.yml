@@ -10,6 +10,9 @@ on:
     branches-ignore:
       - master
       - main
+  push:
+    branches:
+      - 'epic/**'
 
 jobs:
   composer_diff_comment:
@@ -230,15 +233,21 @@ jobs:
       run: |
         echo "FUTURE: Running PHP Code Sniffer..."
 
-  # PR-track multidev (pr-NNN). Runs for every PR update except a closed-and-merged
-  # PR into develop — that case routes to deploy_rc_multidev below. The reusable
-  # workflow runs the deploy, then opt-in VRT and security-scan jobs internally.
+  # PR-track multidev (pr-NNN). Runs while a feature PR is open — opened,
+  # synchronized, or reopened — and only when the PR head isn't an epic branch
+  # (those have their own epr- multidev via deploy_epic_multidev below).
+  # Closing or merging the PR doesn't redeploy pr-NNN: merge-into-develop is
+  # handled by deploy_rc_multidev, merge-into-epic is handled by the push event
+  # firing deploy_epic_multidev, and merge-into-any-other-branch needs no
+  # redeploy. The reusable workflow runs the deploy, then opt-in VRT and
+  # security-scan jobs internally.
   deploy_pr_multidev:
     name: Deploy to PR Multidev
     needs: run_static_tests
     if: >-
-      !(github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop')
-      && (github.event.action != 'closed' || github.event.pull_request.merged == true)
+      github.event_name == 'pull_request'
+      && github.event.action != 'closed'
+      && !startsWith(github.event.pull_request.head.ref, 'epic/')
     uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-pr-multidev.yml@b8a1b636d9430bd8ba67aad6df7f82504e17b697  # v3.0.4
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
@@ -255,14 +264,16 @@ jobs:
       AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
       AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
 
-  # RC-track multidev (rc-YYYY-WW). Runs only when a PR is merged into develop.
-  # The reusable workflow names the env, deploys, and runs the mandatory
-  # strict-mode security scan internally.
+  # RC-track multidev (rc-YYYY-WW). Runs only when a PR is merged into develop
+  # (feature PR or epic PR — both flow through here). The reusable workflow
+  # names the env, deploys, and runs the mandatory strict-mode security scan
+  # internally.
   deploy_rc_multidev:
     name: Deploy to RC Multidev
     needs: run_static_tests
     if: >-
-      github.event.action == 'closed'
+      github.event_name == 'pull_request'
+      && github.event.action == 'closed'
       && github.event.pull_request.merged == true
       && github.event.pull_request.base.ref == 'develop'
     uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-rc-multidev.yml@b8a1b636d9430bd8ba67aad6df7f82504e17b697  # v3.0.4
@@ -274,6 +285,31 @@ jobs:
       PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
       PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+
+  # Epic-track multidev (epr-NNN). Runs on every push to an epic/** branch.
+  # The reusable workflow derives the epr-NNN name from the epic ticket ID,
+  # deploys, and runs the mandatory strict-mode security scan internally.
+  deploy_epic_multidev:
+    name: Deploy to Epic Multidev
+    needs: run_static_tests
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/heads/epic/')
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-epic-multidev.yml@b8a1b636d9430bd8ba67aad6df7f82504e17b697  # v3.0.4
+    with:
+      pantheon_site: ${{ vars.PANTHEON_SITE }}
+      slack_channel: ${{ vars.SLACK_CHANNEL }}
+      workflow_skip_terminus: ${{ vars.WORKFLOW_SKIP_TERMINUS == 'true' }}
+    secrets:
+      PANTHEON_SSH_KEY: ${{ secrets.PANTHEON_SSH_KEY }}
+      PANTHEON_MACHINE_TOKEN: ${{ secrets.PANTHEON_MACHINE_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+      CLICKUP_TEAM_ID: ${{ secrets.CLICKUP_TEAM_ID }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}

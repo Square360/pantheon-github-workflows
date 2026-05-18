@@ -19,8 +19,8 @@ composer require square360/pantheon-github-workflows
 **What happens during installation:**
 - Creates `.github/workflows/` directory
 - Installs `deploy-to-dev.yml` for DEV deployments
-- Installs `deploy-multidev.yml` for PR-based and release-candidate multidev deployments
-- Installs `deploy-epic-multidev.yml` for epic-branch multidev deployments
+- Installs `deploy-multidev.yml` for all three multidev tracks (PR, release-candidate, Epic)
+- Removes obsolete managed files left over from earlier releases (e.g. the standalone `deploy-epic-multidev.yml` that existed in v2.0.0 – v2.0.4)
 - Creates `CHANGELOG-WORKFLOWS.md` for tracking workflow changes
 - Creates `.github/workflows/README.md` with configuration instructions
 
@@ -32,16 +32,14 @@ composer require square360/pantheon-github-workflows
 - **Features**: Includes semantic release, backup checks, database updates, optional Slack notifications
 
 ### deploy-multidev.yml
-- **Trigger**: Pull request opened/updated/closed on feature branches (any branch except master/main)
-- **Action**:
-  - PRs opened/synced/reopened on any branch → deploys to `pr-NNN` multidev
-  - PR closed-and-merged into `develop` → deploys to `rc-YYYY-WW` release-candidate multidev
-- **Features**: Static tests, composer dependency diff, composer security audit (warn-only); the underlying reusable workflow handles deploy, opt-in OWASP ZAP baseline scan, opt-in Visual Regression Tests, ClickUp comments, and optional Slack notifications
-
-### deploy-epic-multidev.yml
-- **Trigger**: Push to an `epic/**` branch (e.g. `epic/CU-EPIC-123` or `epic/CU-EPIC-123-checkout-redesign`)
-- **Action**: Deploys to an `epr-NNN` multidev whose name is derived from the epic ticket ID in the branch name
-- **Features**: Mandatory strict-mode OWASP ZAP baseline scan (fails the workflow on any High-severity finding), optional Slack and ClickUp notifications
+- **Triggers**:
+  - Pull request opened/synced/reopened/closed on any branch except master/main
+  - Push to any `epic/**` branch
+- **Routing** (decided by event type and branch ref inside the workflow):
+  - PR opened/synced/reopened on a non-master/main branch, head ≠ `epic/**` → deploys to `pr-NNN` multidev
+  - PR closed-and-merged into `develop` (feature PR or epic PR) → deploys to `rc-YYYY-WW` release-candidate multidev
+  - Push to `epic/**` → deploys to `epr-NNN` epic multidev
+- **Features**: Static tests, composer dependency diff (PR only), composer security audit (PR only, warn-only); the underlying reusable workflows handle the deploy, opt-in OWASP ZAP baseline scan, opt-in Visual Regression Tests, ClickUp comments, and optional Slack notifications
 
 #### Security checks
 
