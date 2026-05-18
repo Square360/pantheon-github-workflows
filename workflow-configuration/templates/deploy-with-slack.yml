@@ -19,7 +19,7 @@ on:
 jobs:
   deploy:
     if: ${{ github.event.pull_request.merged == true }}
-    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-dev.yml@66dcddc37327b205e7cc5876222cdb012f72960c  # v3.0.1
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-dev.yml@01165b1c08bd0efedf9204b6de3bf1fbff3964e9  # v3.0.2
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       backup_hours_threshold: 6
