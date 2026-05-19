@@ -134,7 +134,7 @@ To add custom workflows that won't be overwritten, use different filenames:
 ## Dependencies
 
 This package depends on the shared workflow repository:
-- [Square360/shared-pantheon-workflows](https://github.com/Square360/shared-pantheon-workflows)
+- [Square360/shared-workflows](https://github.com/Square360/shared-workflows)
 
 The workflows use reusable workflows from this central repository to ensure consistency across all Square360 projects.
 
