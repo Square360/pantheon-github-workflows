@@ -52,7 +52,7 @@ jobs:
   visual_regression_test:
     name: Visual Regression Test
     needs: resolve_pr
-    uses: Square360/shared-pantheon-workflows/.github/workflows/reusable-visual-regression.yml@10cd610d43ff52028f18748d6c92eaa3f40bbe8d  # v2.6
+    uses: Square360/shared-workflows/.github/workflows/reusable-visual-regression.yml@10cd610d43ff52028f18748d6c92eaa3f40bbe8d  # v2.6
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       target_env: ${{ needs.resolve_pr.outputs.target_env }}
