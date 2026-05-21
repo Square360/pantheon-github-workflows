@@ -248,7 +248,7 @@ jobs:
       github.event_name == 'pull_request'
       && github.event.action != 'closed'
       && !startsWith(github.event.pull_request.head.ref, 'epic/')
-    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-pr-multidev.yml@9de5eb4687b7a6da0ef7ccd996fb2e68cc1a2451  # v3.1.6
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-pr-multidev.yml@01ab60d76374701728ff68038f2c9e7ca196589b  # v3.2.0
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       slack_channel: ${{ vars.SLACK_CHANNEL }}
@@ -276,7 +276,7 @@ jobs:
       && github.event.action == 'closed'
       && github.event.pull_request.merged == true
       && github.event.pull_request.base.ref == 'develop'
-    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-rc-multidev.yml@9de5eb4687b7a6da0ef7ccd996fb2e68cc1a2451  # v3.1.6
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-rc-multidev.yml@01ab60d76374701728ff68038f2c9e7ca196589b  # v3.2.0
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       slack_channel: ${{ vars.SLACK_CHANNEL }}
@@ -301,7 +301,7 @@ jobs:
     if: >-
       github.event_name == 'push'
       && startsWith(github.ref, 'refs/heads/epic/')
-    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-epic-multidev.yml@9de5eb4687b7a6da0ef7ccd996fb2e68cc1a2451  # v3.1.6
+    uses: Square360/shared-workflows/.github/workflows/reusable-pantheon-deploy-epic-multidev.yml@01ab60d76374701728ff68038f2c9e7ca196589b  # v3.2.0
     with:
       pantheon_site: ${{ vars.PANTHEON_SITE }}
       slack_channel: ${{ vars.SLACK_CHANNEL }}

@@ -1,3 +1,103 @@
+# Release 2.0.14 (2026-05-21)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.2.0 (01ab60d) — picks up `drush deploy` in `pantheon-post-deploy-drush` (replaces separate updb/cim/cr with a single canonical sequence that adds the cache rebuild between updb and cim, and runs deploy:hook for post-config-import data migrations). See [`Square360/shared-workflows` v3.2.0 release notes](https://github.com/Square360/shared-workflows/releases/tag/v3.2.0) for the full behaviour change and the breaking-change note about the removed `[config-first]` PR-title flag.
+
+# CHANGELOG backfill (2026-05-21)
+
+The semantic-release workflow at `.github/workflows/semantic-release.yml` triggers on `push: main`, but this repo's default branch is `master`. As a result, v1.6.0 through v2.0.13 were tagged via the GitHub UI without semantic-release running, and CHANGELOG.md was not auto-updated for those releases. The entries below were reconstructed manually from `git log` and tag metadata.
+
+# Release 2.0.13 (2026-05-20)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.1.6 (9de5eb4) — drush retry wrapper for transient classloader failures on freshly-pushed Pantheon environments.
+
+# Release 2.0.12 (2026-05-20)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.1.5 (d4e1fe6) — heavier Drupal-bootstrap probe in env-settle wait.
+
+# Release 2.0.11 (2026-05-20)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.1.4 (89f2c39) — wait for Pantheon env filesystem to settle before running drush; fixes the propagation race that caused intermittent drush bootstrap failures right after a code push.
+
+# Release 2.0.10 (2026-05-20)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.1.3 (09f0b16)
+
+# Release 2.0.9 (2026-05-20)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.1.2 (8574e58)
+
+# Release 2.0.8 (2026-05-20)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.1.1 (22fe190)
+
+# Release 2.0.7 (2026-05-20)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.1.0 (1188cb3) — adds VRT opt-in on RC multidev; forward CLICKUP_* secrets on RC.
+
+# Release 2.0.6 (2026-05-19)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.0.5 (79a09b3) — align repo refs to the renamed `shared-workflows` (formerly `shared-pantheon-workflows`).
+
+# Release 2.0.5 (2026-05-18)
+
+### Bug Fixes
+
+* combine epic into deploy-multidev; stop double-deploy on epic merges (f779bf3) — consolidates the separate epic-deploy template into deploy-multidev so a merge to an epic branch no longer triggers two deploys.
+
+# Release 2.0.4 (2026-05-18)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.0.4 (b8a1b63)
+
+# Release 2.0.3 (2026-05-18)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.0.3 (aa8c639)
+
+# Release 2.0.2 (2026-05-18)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.0.2 (01165b1)
+
+# Release 2.0.1 (2026-05-18)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.0.1 (66dcddc)
+
+# Release 2.0.0 (2026-05-18)
+
+### ⚠ BREAKING CHANGES
+
+* route consumer templates to shared-workflows v3.0.0 (2615272) — consumer templates now target the new four-workflow shared-workflows v3 layout (`reusable-pantheon-deploy-{dev,pr-multidev,rc-multidev,epic-multidev}.yml`) instead of the prior monolithic `reusable-deploy-pantheon.yml` / `reusable-deploy-multidev.yml`. Consumer sites pick this up automatically on `composer update`.
+
+# Release 1.6.0 (2026-05-13)
+
+### Security
+
+* pin all reusable-workflow uses to immutable SHA (OWASP HIGH) (ac5d906) — replaces floating `@main` pins in consumer templates with immutable commit SHAs to mitigate the OWASP supply-chain risk flagged by `security-scan`.
+
 # Release 1.5.0 (2026-05-13)
 
 ### Features
