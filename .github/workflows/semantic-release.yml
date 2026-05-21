@@ -1,182 +1,20 @@
 name: Semantic Release
 
+# Default branch on this repo is `master`. Fires after each merge to master,
+# computes the next version from conventional-commit messages, tags it, and
+# publishes a GitHub release. From v2.0.15 onward this no longer has to be
+# done by hand — pre-v2.0.15 tags (v1.6.0–v2.0.14) were cut manually because
+# the prior version of this workflow triggered on the wrong branch AND
+# hardcoded the wrong release branch in its semantic-release config.
 on:
   push:
     branches:
-      - main
-
-defaults:
-  run:
-    shell: bash
+      - master
 
 jobs:
   semantic_release:
-    name: Semantic Release
-    runs-on: ubuntu-latest
-    environment:
-      name: Production
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          # Checkout target branch (master/main) to analyze all commits since last release
-          ref: ${{ github.event.pull_request.base.ref || github.ref }}
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Install dependencies
-        run: |
-          if [ -f package.json ]; then
-            npm ci
-          fi
-          npm install --no-save semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github @semantic-release/commit-analyzer @semantic-release/release-notes-generator conventional-changelog-conventionalcommits@^8.0.0
-
-      - name: Create semantic-release config
-        run: |
-          echo "Creating semantic-release configuration (ignoring any local configs)"
-
-          # Remove any existing config files to ensure we use the computed one
-          rm -f .releaserc .releaserc.json .releaserc.yml .releaserc.yaml .releaserc.js .releaserc.cjs release.config.js release.config.cjs
-
-          # Create custom release notes generator to avoid date formatting issues
-          cat > custom-release-notes.cjs << 'EOJS'
-          module.exports = {
-            generateNotes: async (pluginConfig, context) => {
-              const commits = context.commits;
-
-              const types = {
-                feat: 'Features',
-                fix: 'Bug Fixes',
-                perf: 'Performance Improvements',
-                revert: 'Reverts',
-                docs: 'Documentation',
-                style: 'Styles',
-                chore: 'Chores',
-                refactor: 'Code Refactoring',
-                test: 'Tests',
-                build: 'Build System',
-                ci: 'Continuous Integration'
-              };
-
-              const grouped = {};
-              commits.forEach(commit => {
-                const header = (commit.message || '').split('\n')[0];
-                const match = header.match(/^(\w+)(?:\(([\w\-\.]+)\))?(!)?:?\s*(.*)$/);
-                const type = match ? match[1] : 'other';
-                const scope = match ? (match[2] || null) : null;
-                const rawSubject = match ? match[4] : header;
-                const trimmedRawSubject = (rawSubject || '').trim();
-                const fallbackCommitSubject = (commit.subject || '').trim();
-                const subject = trimmedRawSubject
-                  ? trimmedRawSubject
-                  : (fallbackCommitSubject || header);
-                if (!grouped[type]) grouped[type] = [];
-                grouped[type].push({ ...commit, type, scope, subject });
-              });
-
-              const version = context.nextRelease.version;
-              const date = new Date().toISOString().split('T')[0];
-              let notes = `# Release ${version} (${date})\n\n`;
-
-              // Process types in order
-              Object.keys(types).forEach(type => {
-                if (grouped[type] && grouped[type].length > 0) {
-                  notes += `### ${types[type]}\n\n`;
-                  grouped[type].forEach(commit => {
-                    const scope = commit.scope ? `${commit.scope}: ` : '';
-                    const hash = commit.hash.substring(0, 7);
-                    notes += `* ${scope}${commit.subject} (${hash})\n`;
-                  });
-                  notes += '\n';
-                }
-              });
-
-              return notes.trim();
-            }
-          };
-          EOJS
-
-          cat > .releaserc.js << 'EOF'
-          module.exports = {
-            branches: ["main"],
-            plugins: [
-              [
-                "@semantic-release/commit-analyzer",
-                {
-                  preset: "conventionalcommits",
-                  releaseRules: [
-                    {type: "feat", release: "minor"},
-                    {type: "fix", release: "patch"},
-                    {type: "perf", release: "patch"},
-                    {type: "revert", release: "patch"},
-                    {type: "docs", release: false},
-                    {type: "style", release: "patch"},
-                    {type: "chore", release: "patch"},
-                    {type: "refactor", release: "minor"},
-                    {type: "test", release: false},
-                    {type: "build", release: false},
-                    {type: "ci", release: "patch"}
-                  ],
-                  parserOpts: {
-                    headerPattern: /^(\w+)(?:\(([\w\-\.]+)\))?(!)?:?\s*(.*)$/,
-                    headerCorrespondence: ["type", "scope", "breaking", "subject"]
-                  }
-                }
-              ],
-              "./custom-release-notes.cjs",
-              "@semantic-release/changelog",
-              [
-                "@semantic-release/github",
-                {
-                  successComment: false,
-                  failComment: false,
-                  failTitle: false,
-                  labels: false,
-                  releasedLabels: false,
-                  addReleases: "bottom"
-                }
-              ],
-              [
-                "@semantic-release/git",
-                {
-                  assets: ["CHANGELOG.md"],
-                  message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-                }
-              ]
-            ]
-          };
-          EOF
-
-      - name: Validate git history
-        run: |
-          # Check for commits with invalid dates and log them
-          echo "Checking for commits with invalid dates..."
-          git log --all --pretty=format:"%H %aI %cI" | while read hash author_date committer_date; do
-            if ! date -d "$author_date" &>/dev/null 2>&1 && ! date -jf "%Y-%m-%dT%H:%M:%S%z" "$author_date" &>/dev/null 2>&1; then
-              echo "Warning: Commit $hash has invalid author date: $author_date"
-            fi
-            if ! date -d "$committer_date" &>/dev/null 2>&1 && ! date -jf "%Y-%m-%dT%H:%M:%S%z" "$committer_date" &>/dev/null 2>&1; then
-              echo "Warning: Commit $hash has invalid committer date: $committer_date"
-            fi
-          done || true
-
-      - name: Semantic Release
-        run: |
-          # Override GitHub context to force semantic-release to run in push mode
-          export GITHUB_EVENT_NAME=push
-          if [ -n "${{ github.event.pull_request.base.ref }}" ]; then
-            export GITHUB_REF="refs/heads/${{ github.event.pull_request.base.ref }}"
-          else
-            export GITHUB_REF="${{ github.ref }}"
-          fi
-          unset GITHUB_HEAD_REF
-          unset GITHUB_BASE_REF
-
-          npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.CI_GH_TOKEN }}
+    uses: Square360/shared-workflows/.github/workflows/reusable-semantic-release.yml@6f34dc23f75ea38d0b8f41fb8fb6e7bbe3343935  # v3.2.1
+    with:
+      release_branches: '["master"]'
+    secrets:
+      CI_GH_TOKEN: ${{ secrets.CI_GH_TOKEN }}
