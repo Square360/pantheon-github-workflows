@@ -1,3 +1,9 @@
+# Release 2.0.16 (2026-05-21)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.2.2 (63ec600) (7907c42)
+
 # Release 2.0.15 (2026-05-21)
 
 ### Bug Fixes
