@@ -1,3 +1,9 @@
+# Release 2.0.15 (2026-05-21)
+
+### Bug Fixes
+
+* repin shared-workflows SHA to v3.2.1 (6f34dc2); delegate semantic-release to shared reusable (484781f)
+
 # Release 2.0.14 (2026-05-21)
 
 ### Bug Fixes
